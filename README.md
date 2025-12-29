@@ -6,3 +6,10 @@
 - `opam install --deps-only --yes .`
 - `dune exec --root . ./homepage.exe`
 
+## MVP
+
+- [] Create site layout template
+- [] Implement page + request stubs
+- [] Auth session for protected routes
+- [] DB integration
+- [] Deployment

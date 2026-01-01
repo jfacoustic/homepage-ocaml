@@ -1,0 +1,9 @@
+./watch.sh
+
+_opam/
+_build/
+.git/
+.gitignore
+Dockerfile
+docker-compose.yml
+

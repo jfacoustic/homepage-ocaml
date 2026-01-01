@@ -12,7 +12,7 @@ let home_page =
        ])
 
 let () =
-  Dream.run
+  Dream.run ~interface:"0.0.0.0"
   @@ Dream.livereload
   @@ Dream.logger
   @@ Dream.router

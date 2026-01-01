@@ -1,4 +1,0 @@
-(executable
-  (name homepage)
-  (libraries dream)
-  (preprocess (pps lwt_ppx)))

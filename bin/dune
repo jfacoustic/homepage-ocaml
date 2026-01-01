@@ -1,6 +1,6 @@
 (executable
  (public_name homepage)
  (name main)
- (libraries dream) 
+ (libraries dream-html) 
  (preprocess
   (pps lwt_ppx)))

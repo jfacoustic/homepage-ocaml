@@ -1,4 +1,15 @@
-let home_page = fun _req -> Dream.html "Home Page"
+let home_page =
+ fun _req ->
+  let open Dream_html in
+  let open HTML in
+  respond
+    (html
+       [ lang "en" ]
+       [
+         head [] [ title [] "Josh Felton Mathews" ];
+         body []
+           [ h1 [] [ txt "Welcome" ]; p [] [ txt "My name is Josh Mathews" ] ];
+       ])
 
 let () =
   Dream.run

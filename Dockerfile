@@ -1,19 +1,23 @@
-FROM ocaml/opam:alpine as build
+FROM ocaml/opam:alpine AS build
 
-RUN sudo apk add --update libev-dev openssl-dev gmp-dev
+USER root
+RUN apk add --no-cache libev-dev openssl-dev gmp-dev
 
-WORKDIR /home/opam
+RUN mkdir -p /home/opam/project
 
-ADD homepage.opam homepage.opam
+COPY --chown=opam:opam homepage.opam /home/opam/project/
+WORKDIR /home/opam/project
+
+USER opam
 RUN opam install . --deps-only
 
-ADD . .
-RUN opam exec -- dune build
+USER root
+COPY --chown=opam:opam . /home/opam/project
 
-FROM alpine:3.18.4 as run
+USER opam
+RUN mkdir -p _build && opam exec -- dune build
 
-RUN apk add --update libev
-
-COPY --from=build /home/opam/_build/default/bin/main.exe /bin/main
-
-ENTRYPOINT /bin/main
+FROM alpine:3.18.4 AS run
+RUN apk add --no-cache libev
+COPY --from=build /home/opam/project/_build/default/bin/main.exe /bin/main
+ENTRYPOINT ["/bin/main"]

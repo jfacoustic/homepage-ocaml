@@ -1,6 +1,8 @@
 services:
   web:
-    build: .
+    build:
+      context: "."
+      dockerfile: ${DOCKERFILE_PATH:-"./Dockerfile"}
     ports:
       - "80:8080"
     restart: always

@@ -12,4 +12,4 @@
 - [] Implement page + request stubs
 - [] Auth session for protected routes
 - [] DB integration
-- [] Deployment
+- [X] Deployment

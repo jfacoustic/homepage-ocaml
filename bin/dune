@@ -1,6 +1,6 @@
 (executable
  (public_name homepage)
  (name main)
- (libraries dream-html) 
+ (libraries dream-html routes components static) 
  (preprocess
   (pps lwt_ppx)))

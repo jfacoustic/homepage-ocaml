@@ -16,4 +16,4 @@
   (name homepage)
   (synopsis "Josh Mathews' homepage")
   (description "Homepage written in OCaml with blog")
-  (depends ocaml dream-html))
+  (depends ocaml dream-html sqlite3 omd))

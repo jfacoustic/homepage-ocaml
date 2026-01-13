@@ -39,8 +39,14 @@ let get_timestamp filename =
 
 let apply_migration filename =
   let ic = open_in filename in
-  let contents = In_channel.input_all ic in
-  print_endline contents;
+  let query = In_channel.input_all ic in
+  let db = Sqlite3.db_open "homepage" in
+  let _ =
+    match Sqlite3.exec db query with
+    | Sqlite3.Rc.OK -> Printf.printf "Applied migration %s\n" filename
+    | _ -> failwith (Sqlite3.errmsg db)
+  in
+  let _ = Sqlite3.db_close db in
   close_in ic
 
 let apply_migrations () =

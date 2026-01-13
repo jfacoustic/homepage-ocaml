@@ -1,4 +1,4 @@
 (executable
  (public_name db)
  (name db)
- (libraries sqlite3)) 
+ (libraries sqlite3 unix str)) 

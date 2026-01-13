@@ -7,10 +7,6 @@ let default_msg =
     db --help
 |}
 
-let exit_with_msg msg =
-  print_endline msg;
-  exit
-
 let whitespace = Str.regexp " +"
 
 let get_migration_desc () =
@@ -37,23 +33,61 @@ let get_timestamp filename =
   | [] -> failwith "Invalid filename"
   | timestamp :: _ -> int_of_string timestamp
 
-let apply_migration filename =
-  let ic = open_in filename in
-  let query = In_channel.input_all ic in
-  let db = Sqlite3.db_open "homepage" in
+let update_migrations_table db filename =
+  let create_migrations_table =
+    "CREATE TABLE IF NOT EXISTS migrations (name TEXT NOT NULL UNIQUE);"
+  in
   let _ =
-    match Sqlite3.exec db query with
-    | Sqlite3.Rc.OK -> Printf.printf "Applied migration %s\n" filename
+    match Sqlite3.exec db create_migrations_table with
+    | Sqlite3.Rc.OK -> ()
     | _ -> failwith (Sqlite3.errmsg db)
   in
-  let _ = Sqlite3.db_close db in
-  close_in ic
+  let insert_migration =
+    Sqlite3.prepare db "INSERT INTO migrations (name) VALUES (?);"
+  in
+  let _ =
+    match Sqlite3.bind_text insert_migration 1 filename with
+    | Sqlite3.Rc.OK -> ()
+    | _ -> failwith (Sqlite3.errmsg db)
+  in
+  Sqlite3.step insert_migration
+
+let check_migration db filename =
+  let migration_exists =
+    Sqlite3.prepare db "SELECT COUNT(*) FROM migrations WHERE name = ?"
+  in
+  ignore (Sqlite3.bind_text migration_exists 1 filename);
+  ignore (Sqlite3.step migration_exists);
+  match
+    Sqlite3.Data.to_int (Array.get (Sqlite3.row_data migration_exists) 0)
+  with
+  | Some v -> v > 0
+  | _ -> false
+
+let apply_migration db filename =
+  if check_migration db filename then
+    Printf.printf "%s already applied!\n" filename
+  else
+    let ic = open_in (Printf.sprintf "migrations/%s" filename) in
+    let query = In_channel.input_all ic in
+    let _ =
+      match Sqlite3.exec db query with
+      | Sqlite3.Rc.OK -> Printf.printf "Applied migration %s\n" filename
+      | _ -> failwith (Sqlite3.errmsg db)
+    in
+    let _ = update_migrations_table db filename in
+    close_in ic
 
 let apply_migrations () =
-  Sys.readdir "migrations"
-  |> Array.to_list (* Sort files in reverse order *)
-  |> List.sort (fun f1 f2 -> get_timestamp f1 - get_timestamp f2)
-  |> List.iter (fun f -> apply_migration (Printf.sprintf "migrations/%s" f))
+  let db = Sqlite3.db_open "homepage" in
+  let _ =
+    Sys.readdir "migrations"
+    |> Array.to_list (* Sort files in reverse order *)
+    |> List.sort (fun f1 f2 -> get_timestamp f1 - get_timestamp f2)
+    |> List.iter (fun f -> apply_migration db f)
+  in
+  let _ = Sqlite3.db_close db in
+  print_endline "Successfully updated all migrations!"
 
 let exec () =
   match Array.to_list Sys.argv with
@@ -66,6 +100,6 @@ let exec () =
 
 let () =
   if not (Sys.file_exists "dune-project") then
-    exit_with_msg "Not in Project Root" (-1)
+    failwith "Not in Project Root"
   else
     exec ()

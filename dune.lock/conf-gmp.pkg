@@ -6,7 +6,9 @@
   -c
   "pkg-config --print-errors --exists gmp || cc -c $CFLAGS -I/usr/local/include test.c"))
 
-(depexts libgmp-dev)
+(depends conf-pkg-config)
+
+(depexts gmp)
 
 (extra_sources
  (test.c

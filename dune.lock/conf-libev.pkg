@@ -5,7 +5,7 @@
 
 (depends ocaml)
 
-(depexts libev-dev)
+(depexts libev)
 
 (extra_sources
  (build.sh

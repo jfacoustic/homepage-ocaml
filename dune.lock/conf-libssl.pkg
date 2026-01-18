@@ -1,13 +1,18 @@
 (version 4)
 
+(install
+ (withenv
+  ((= HOMEBREW_NO_AUTO_UPDATE 1))
+  (run sh -ex ./homebrew.sh install %{lib})))
+
 (build
  (withenv
   ((= HOMEBREW_NO_AUTO_UPDATE 1))
-  (run pkg-config --print-errors --exists openssl)))
+  (run sh -ex ./homebrew.sh check)))
 
 (depends conf-pkg-config)
 
-(depexts libssl-dev)
+(depexts openssl)
 
 (extra_sources
  (homebrew.sh

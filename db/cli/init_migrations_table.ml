@@ -2,8 +2,9 @@ let init_query =
   {|
 CREATE TABLE IF NOT EXISTS migrations (
   migration_id SERIAL PRIMARY KEY, 
-  description TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW());
+  filename TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  applied BOOLEAN DEFAULT false);
 |}
 
 let exec () =

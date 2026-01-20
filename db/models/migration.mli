@@ -1,11 +1,15 @@
 type t = {
   migration_id : int;
-  filename : string;
-  created_at : Timedesc.Zoneless.zoneless;
+  filename_up : string;
+  filename_down : string;
+  created_at : Row.timestamp option;
+  updated_at : Row.timestamp option;
   applied : bool;
 }
 
-val insert_migration : string -> unit
-val get_migrations : unit -> t list
+type order_t = ASC | DESC
+
+val insert_migration : string -> string -> unit
+val get_migrations : order_t -> t list
 val update_migration : t -> unit
 val print_migration : t -> unit

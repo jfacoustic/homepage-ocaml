@@ -4,7 +4,7 @@ type field_data_t =
   | TBool of bool
   | TString of string
   | TInt of int
-  | TTimestamp of timestamp
+  | TTimestamp of timestamp option
 
 type field_data = { name : string; value : field_data_t }
 type t = field_data list
@@ -61,7 +61,10 @@ let get_timestamp name row =
   row |> get_field_data name |> timestamp_of_field_data_t
 
 let string_of_timestamp value =
-  value |> Timedesc.Zoneless.to_timestamp_local |> Timedesc.Timestamp.to_string
+  match value with
+  | Some v ->
+      v |> Timedesc.Zoneless.to_timestamp_local |> Timedesc.Timestamp.to_string
+  | None -> "NIL"
 
 let psql_ftype_of_field_data_t fdt =
   match fdt with

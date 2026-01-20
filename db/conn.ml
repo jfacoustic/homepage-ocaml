@@ -19,9 +19,11 @@ let bool_of_psql_string fvalue =
   | _ -> failwith (Printf.sprintf "Error parsing boolean value: %s" fvalue)
 
 let parse_timestamp db_timestamp =
-  match Timedesc.Zoneless.of_iso8601 db_timestamp with
-  | Ok value -> value
-  | Error e -> failwith e
+  if String.length db_timestamp = 0 then None
+  else
+    match Timedesc.Zoneless.of_iso8601 db_timestamp with
+    | Ok value -> Some value
+    | Error e -> failwith e
 
 let parse_field name ftype fvalue =
   match ftype with
@@ -44,6 +46,7 @@ let parse_db_res res =
       let name = List.nth fnames_list field in
       let ftype = res#ftype field in
       let fvalue = res#getvalue tuple field in
+      Printf.printf "\n%s %s\n" name fvalue;
       row := !row @ [ parse_field name ftype fvalue ]
     done;
     result := !result @ [ !row ]

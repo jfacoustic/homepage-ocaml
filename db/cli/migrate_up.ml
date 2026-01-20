@@ -6,7 +6,7 @@ let apply_migration migration =
   let open Migration in
   let query = read_file migration.filename in
   let _ = Conn.send_query query in
-  Conn.finish ()
+  Migration.update_migration { migration with applied = true }
 
 let handle_migration migration =
   let open Migration in
@@ -14,11 +14,10 @@ let handle_migration migration =
   else apply_migration migration
 
 let rec iter_migrations migrations =
-  let open Migration in
   match migrations with
   | [] -> print_endline "Finished migrating!"
   | migration :: rest ->
-      print_endline migration.filename;
+      handle_migration migration;
       iter_migrations rest
 
 let exec () =

@@ -62,3 +62,12 @@ let get_timestamp name row =
 
 let string_of_timestamp value =
   value |> Timedesc.Zoneless.to_timestamp_local |> Timedesc.Timestamp.to_string
+
+let psql_ftype_of_field_data_t fdt =
+  match fdt with
+  | TBool _ -> Postgresql.BOOL
+  | TString _ -> Postgresql.TEXT
+  | TInt _ -> Postgresql.INT8
+  | TTimestamp _ -> Postgresql.TIMESTAMP
+
+let psql_string_of_bool value = if value then "t" else "f"

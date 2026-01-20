@@ -25,4 +25,6 @@ let cmd () =
 
 let _ =
   Printf.printf "Connecting to DB: %s \n\n" conninfo;
-  cmd ()
+  let _ = Conn.instance () in
+  cmd ();
+  Conn.finish ()

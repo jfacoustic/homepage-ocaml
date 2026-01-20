@@ -14,3 +14,5 @@ val get_string : string -> t -> string
 val get_int : string -> t -> int
 val get_timestamp : string -> t -> timestamp
 val string_of_timestamp : timestamp -> string
+val psql_ftype_of_field_data_t : field_data_t -> Postgresql.ftype
+val psql_string_of_bool : bool -> string

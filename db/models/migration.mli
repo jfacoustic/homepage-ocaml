@@ -2,7 +2,7 @@ type t = {
   migration_id : int;
   filename_up : string;
   filename_down : string;
-  created_at : Row.timestamp option;
+  created_at : Row.timestamp;
   updated_at : Row.timestamp option;
   applied : bool;
 }

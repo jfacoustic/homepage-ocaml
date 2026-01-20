@@ -19,22 +19,46 @@ let bool_of_psql_string fvalue =
   | _ -> failwith (Printf.sprintf "Error parsing boolean value: %s" fvalue)
 
 let parse_timestamp db_timestamp =
-  if String.length db_timestamp = 0 then None
-  else
-    match Timedesc.Zoneless.of_iso8601 db_timestamp with
-    | Ok value -> Some value
-    | Error e -> failwith e
+  match Timedesc.Zoneless.of_iso8601 db_timestamp with
+  | Ok value -> value
+  | Error e -> failwith e
+
+let parse_field_value cb fvalue =
+  if String.length fvalue = 0 then None else Some (cb fvalue)
 
 let parse_field name ftype fvalue =
   match ftype with
-  | Postgresql.BOOL -> { name; value = TBool (bool_of_psql_string fvalue) }
-  | Postgresql.TEXT -> { name; value = TString fvalue }
-  | Postgresql.VARCHAR -> { name; value = TString fvalue }
-  | Postgresql.INT2 -> { name; value = TInt (int_of_string fvalue) }
-  | Postgresql.INT4 -> { name; value = TInt (int_of_string fvalue) }
-  | Postgresql.INT8 -> { name; value = TInt (int_of_string fvalue) }
+  | Postgresql.BOOL ->
+      {
+        name;
+        value =
+          parse_field_value (fun v -> TBool (bool_of_psql_string v)) fvalue;
+      }
+  | Postgresql.TEXT ->
+      { name; value = parse_field_value (fun v -> TString v) fvalue }
+  | Postgresql.VARCHAR ->
+      { name; value = parse_field_value (fun v -> TString v) fvalue }
+  | Postgresql.INT2 ->
+      {
+        name;
+        value = parse_field_value (fun v -> TInt (int_of_string v)) fvalue;
+      }
+  | Postgresql.INT4 ->
+      {
+        name;
+        value = parse_field_value (fun v -> TInt (int_of_string v)) fvalue;
+      }
+  | Postgresql.INT8 ->
+      {
+        name;
+        value = parse_field_value (fun v -> TInt (int_of_string v)) fvalue;
+      }
   | Postgresql.TIMESTAMP ->
-      { name; value = TTimestamp (parse_timestamp fvalue) }
+      {
+        name;
+        value =
+          parse_field_value (fun v -> TTimestamp (parse_timestamp v)) fvalue;
+      }
   | _ -> failwith "ERROR"
 
 let parse_db_res res =

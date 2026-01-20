@@ -2,7 +2,7 @@ type t = {
   migration_id : int;
   filename_up : string;
   filename_down : string;
-  created_at : Row.timestamp option;
+  created_at : Row.timestamp;
   updated_at : Row.timestamp option;
   applied : bool;
 }
@@ -26,12 +26,12 @@ let insert_migration filename_up filename_down =
 
 let parse_row row =
   {
-    migration_id = row |> Row.get_int "migration_id";
-    filename_up = row |> Row.get_string "filename_up";
-    filename_down = row |> Row.get_string "filename_down";
-    created_at = row |> Row.get_timestamp "created_at";
+    migration_id = row |> Row.get_int "migration_id" |> Row.required;
+    filename_up = row |> Row.get_string "filename_up" |> Row.required;
+    filename_down = row |> Row.get_string "filename_down" |> Row.required;
+    created_at = row |> Row.get_timestamp "created_at" |> Row.required;
     updated_at = row |> Row.get_timestamp "updated_at";
-    applied = row |> Row.get_bool "applied";
+    applied = row |> Row.get_bool "applied" |> Row.required;
   }
 
 let get_migrations_query_asc =

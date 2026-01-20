@@ -6,6 +6,6 @@ val send_query :
   ?binary_params:bool array ->
   ?binary_result:bool ->
   string ->
-  unit
+  Row.t list
 
 val finish : unit -> unit

@@ -12,6 +12,7 @@ depends: [
   "ocaml"
   "dream-html"
   "postgresql"
+  "timedesc"
   "odoc" {with-doc}
 ]
 build: [

@@ -1,3 +1,5 @@
+open Row
+
 let conninfo =
   match Sys.getenv_opt "PG_URL" with
   | Some p -> p
@@ -10,50 +12,54 @@ let instance () =
       Printf.eprintf "postgresql error [%s]\n" s);
   conn
 
-let print_res conn res =
-  let open Postgresql in
-  let open Printf in
-  match res#status with
-  | Empty_query -> printf "Empty query\n"
-  | Command_ok -> printf "Command ok [%s]\n" res#cmd_status
-  | Tuples_ok ->
-      printf "Tuples ok\n";
-      printf "%i tuples with %i fields\n" res#ntuples res#nfields;
-      print_endline (String.concat ";" res#get_fnames_lst);
-      for tuple = 0 to res#ntuples - 1 do
-        for field = 0 to res#nfields - 1 do
-          printf "%s, " (res#getvalue tuple field)
-        done;
-        print_newline ()
-      done
-  | Copy_out ->
-      printf "Copy out:\n";
-      conn#copy_out print_endline
-  | Copy_in ->
-      printf "Copy in, not handled!\n";
-      exit 1
-  | Bad_response ->
-      printf "Bad response: %s\n" res#error;
-      conn#reset
-  | Nonfatal_error -> printf "Non fatal error: %s\n" res#error
-  | Fatal_error -> printf "Fatal error: %s\n" res#error
-  | Copy_both ->
-      printf "Copy in/out, not handled!\n";
-      exit 1
-  | Single_tuple ->
-      printf "Single tuple, not handled!\n";
-      exit 1
+let bool_of_psql_string fvalue =
+  match fvalue with
+  | "f" -> false
+  | "t" -> true
+  | _ -> failwith (Printf.sprintf "Error parsing boolean value: %s" fvalue)
 
-let rec dump_res conn =
+let parse_timestamp db_timestamp =
+  match Timedesc.Zoneless.of_iso8601 db_timestamp with
+  | Ok value -> value
+  | Error e -> failwith e
+
+let parse_field name ftype fvalue =
+  match ftype with
+  | Postgresql.BOOL -> { name; value = TBool (bool_of_psql_string fvalue) }
+  | Postgresql.TEXT -> { name; value = TString fvalue }
+  | Postgresql.VARCHAR -> { name; value = TString fvalue }
+  | Postgresql.INT2 -> { name; value = TInt (int_of_string fvalue) }
+  | Postgresql.INT4 -> { name; value = TInt (int_of_string fvalue) }
+  | Postgresql.INT8 -> { name; value = TInt (int_of_string fvalue) }
+  | Postgresql.TIMESTAMP ->
+      { name; value = TTimestamp (parse_timestamp fvalue) }
+  | _ -> failwith "ERROR"
+
+let parse_db_res res =
+  let result = ref [] in
+  let fnames_list = res#get_fnames_lst in
+  for tuple = 0 to res#ntuples - 1 do
+    let row = ref [] in
+    for field = 0 to res#nfields - 1 do
+      let name = List.nth fnames_list field in
+      let ftype = res#ftype field in
+      let fvalue = res#getvalue tuple field in
+      row := !row @ [ parse_field name ftype fvalue ]
+    done;
+    result := !result @ [ !row ]
+  done;
+  !result
+
+let rec dump_res conn records =
   match conn#get_result with
   | Some res ->
-      print_res conn res;
       flush stdout;
-      dump_res conn
-  | None -> ()
+      dump_res conn (records @ parse_db_res res)
+  | None -> records
 
 let send_query ?param_types ?params ?binary_params ?binary_result query =
   conn#send_query ?param_types ?params ?binary_params ?binary_result query;
-  dump_res conn
+  let records = dump_res conn [] in
+  records
 
 let finish () = conn#finish

@@ -8,5 +8,5 @@ CREATE TABLE IF NOT EXISTS migrations (
 |}
 
 let exec () =
-  Conn.send_query init_query;
+  let _ = Conn.send_query init_query in
   print_endline "Initialized Migrations Table"

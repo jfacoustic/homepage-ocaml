@@ -15,18 +15,4 @@ let gen_file desc =
   close_out oc;
   filename
 
-let insert_migration_query =
-  {|
-INSERT INTO migrations (filename) values
-  ($1);
-|}
-
-let insert_migration filename =
-  let _ = Conn.instance () in
-  Conn.send_query ~params:[| filename |]
-    ~param_types:Postgresql.[| Postgresql.oid_of_ftype TEXT |]
-    insert_migration_query;
-  Conn.finish ();
-  print_endline filename
-
-let exec desc = desc |> gen_file |> insert_migration
+let exec desc = desc |> gen_file |> Migration.insert_migration

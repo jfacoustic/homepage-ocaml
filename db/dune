@@ -1,7 +1,7 @@
 (executable
  (public_name db)
  (name db)
- (libraries postgresql unix str)
+ (libraries postgresql unix str timedesc)
  (preprocess
   (pps lwt_ppx)))
 
